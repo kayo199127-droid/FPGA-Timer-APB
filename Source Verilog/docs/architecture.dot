@@ -1,0 +1,25 @@
+digraph IP_TIMER {
+  graph [rankdir=LR, bgcolor="white", pad="0.25", nodesep="0.45", ranksep="0.65", splines=ortho, fontname="Arial", label="FAP201 IP TIMER – SYSTEM ARCHITECTURE", labelloc=t, fontsize=20];
+  node [shape=box, style="rounded,filled", color="#24476B", penwidth=1.5, fontname="Arial", fontsize=11, margin="0.18,0.12", fillcolor="#EAF2F8"];
+  edge [fontname="Arial", fontsize=9, color="#356FA3", penwidth=1.4, arrowsize=0.8];
+  master [label="APB Master / SoC\nExternal initiator", fillcolor="#F4F6F7"];
+  apb [label="apb_slave\nAPB SETUP/ACCESS\nWait state + PSLVERR"];
+  regs [label="register\nTCR, TDR0/1, TCMP0/1\nTIER, TISR, THCSR", fillcolor="#E6F2E2"];
+  divider [label="timer_divider\n(div_val + 1) tick\nDebug halt gating"];
+  core [label="timer_core\n64-bit counter\nCompare event + clear\nDebug freeze", fillcolor="#E6F2E2"];
+  irq [label="tim_int\nInterrupt output", fillcolor="#FFF2CC"];
+  master -> apb [label="PSEL, PENABLE, PWRITE\nPADDR, PWDATA, PSTRB"];
+  apb -> master [label="PRDATA, PREADY, PSLVERR", dir=back, color="#A65E2E"];
+  apb -> regs [label="reg_wr_en / address / data"];
+  regs -> apb [label="reg_rdata / reg_err", dir=back, color="#A65E2E"];
+  regs -> divider [label="timer_en, div_en, div_val"];
+  divider -> core [label="div_tick, halt_ack"];
+  regs -> core [label="TDR load/data, TCMP"];
+  core -> regs [label="counter value, compare event", dir=back, color="#A65E2E"];
+  regs -> irq [label="int_st AND int_en"];
+  ext [shape=note, label="sys_clk\nsys_rst_n (active-low)\ndbg_mode", fillcolor="#F4F6F7", color="#888888"];
+  ext -> apb [style=dashed, arrowhead=none, color="#888888"];
+  ext -> regs [style=dashed, arrowhead=none, color="#888888"];
+  ext -> divider [style=dashed, arrowhead=none, color="#888888"];
+  ext -> core [style=dashed, arrowhead=none, color="#888888"];
+}
